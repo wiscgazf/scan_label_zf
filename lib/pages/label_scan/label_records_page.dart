@@ -103,38 +103,45 @@ class _LabelRecordsPageState extends State<LabelRecordsPage> {
     final foreground = selected
         ? colorScheme.onPrimaryContainer
         : colorScheme.onSurfaceVariant;
-    return Material(
-      color: selected
-          ? colorScheme.primaryContainer
-          : colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
-      borderRadius: BorderRadius.circular(10),
-      child: InkWell(
-        onTap: _pickDateRange,
+    // 与左侧搜索框统一 40 高，内容垂直居中。
+    return SizedBox(
+      height: 40,
+      child: Material(
+        color: selected
+            ? colorScheme.primaryContainer
+            : colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
         borderRadius: BorderRadius.circular(10),
-        child: SizedBox(
-          height: 40,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(width: 10),
-              Icon(Icons.calendar_month_outlined, size: 18, color: foreground),
-              const SizedBox(width: 6),
-              Text(
-                selected ? _formatRange(range) : '日期',
-                style: TextStyle(fontSize: 13, color: foreground),
-              ),
-              if (selected)
-                GestureDetector(
-                  onTap: _clearDateRange,
-                  behavior: HitTestBehavior.opaque,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Icon(Icons.close, size: 16, color: foreground),
-                  ),
-                )
-              else
+        child: InkWell(
+          onTap: _pickDateRange,
+          borderRadius: BorderRadius.circular(10),
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
                 const SizedBox(width: 10),
-            ],
+                Icon(
+                  Icons.calendar_month_outlined,
+                  size: 18,
+                  color: foreground,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  selected ? _formatRange(range) : '日期',
+                  style: TextStyle(fontSize: 13, color: foreground),
+                ),
+                if (selected)
+                  GestureDetector(
+                    onTap: _clearDateRange,
+                    behavior: HitTestBehavior.opaque,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Icon(Icons.close, size: 16, color: foreground),
+                    ),
+                  )
+                else
+                  const SizedBox(width: 10),
+              ],
+            ),
           ),
         ),
       ),
@@ -204,6 +211,7 @@ class _LabelRecordsPageState extends State<LabelRecordsPage> {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
               // 搜索与日期筛选合并为一行，把空间留给列表。
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
                     child: SizedBox(
@@ -243,6 +251,9 @@ class _LabelRecordsPageState extends State<LabelRecordsPage> {
                           fillColor: colorScheme.surfaceContainerHighest
                               .withValues(alpha: 0.35),
                           isDense: true,
+                          // 去掉装饰器内部垂直间距，让内容与填充背景
+                          // 严格居中于 40 高外壳，与日期按钮对齐。
+                          isCollapsed: true,
                           contentPadding: EdgeInsets.zero,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),

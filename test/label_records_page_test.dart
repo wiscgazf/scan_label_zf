@@ -129,6 +129,29 @@ void main() {
     await tester.pump();
   }
 
+  testWidgets('搜索框与日期按钮同为 40 高且顶底对齐（垂直居中）', (tester) async {
+    await pumpPage(tester);
+    final searchRect = tester.getRect(find.byType(TextField));
+    final dateRect = tester.getRect(
+      find
+          .ancestor(
+            of: find.byIcon(Icons.calendar_month_outlined),
+            matching: find.byType(InkWell),
+          )
+          .first,
+    );
+
+    expect(searchRect.height, 40);
+    expect(dateRect.height, 40);
+    expect(searchRect.top, moreOrLessEquals(dateRect.top, epsilon: 0.001));
+    expect(
+      searchRect.bottom,
+      moreOrLessEquals(dateRect.bottom, epsilon: 0.001),
+    );
+    // 搜索框提示文案正常显示（isCollapsed 不影响 hint）。
+    expect(find.text('搜索物料名称'), findsOneWidget);
+  });
+
   testWidgets('列表展示名称、编码、录入时间，支持名称筛选', (tester) async {
     await pumpPage(tester);
 
