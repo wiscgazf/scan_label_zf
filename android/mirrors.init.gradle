@@ -1,0 +1,29 @@
+// 全局 Maven 镜像：把官方 Central / Google 仓库重定向到国内镜像。
+// 复制到 %USERPROFILE%\.gradle\init.d\mirrors.gradle 后对全部项目生效，
+// 含第三方 Flutter 插件模块自带的 buildscript 仓库（项目级镜像配置管不到它们），
+// 避免从 repo.maven.apache.org / dl.google.com 直连下载缓慢甚至超时。
+def redirect = { repoHandler ->
+    repoHandler.all { repo ->
+        if (repo instanceof org.gradle.api.artifacts.repositories.MavenArtifactRepository) {
+            def u = repo.url.toString()
+            if (u.startsWith('https://repo.maven.apache.org/maven2') ||
+                u.startsWith('https://repo1.maven.org/maven2')) {
+                repo.url = 'https://maven.aliyun.com/repository/central'
+            } else if (u.startsWith('https://dl.google.com/dl/android/maven2')) {
+                repo.url = 'https://maven.aliyun.com/repository/google'
+            }
+        }
+    }
+}
+
+allprojects {
+    buildscript {
+        repositories redirect
+    }
+    repositories redirect
+}
+
+settingsEvaluated { settings ->
+    redirect(settings.pluginManagement.repositories)
+    redirect(settings.dependencyResolutionManagement.repositories)
+}
