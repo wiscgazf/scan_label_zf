@@ -28,7 +28,8 @@ class LabelRecord {
   }
 
   factory LabelRecord.fromRow(Map<String, Object?> row) {
-    final fieldsJson = jsonDecode(row['fields'] as String) as Map<String, dynamic>;
+    final fieldsJson =
+        jsonDecode(row['fields'] as String) as Map<String, dynamic>;
     return LabelRecord(
       id: row['id'] as String,
       key: row['scan_key'] as String,
@@ -134,8 +135,8 @@ class LabelRecordStore extends ChangeNotifier {
   /// 应用启动时预热，避免首次打开管理页等待建库。
   Future<void> open() => _database();
 
-  /// 按录入日期区间（含起止当天，均可留空）与物料名称（模糊）筛选，
-  /// 录入时间倒序。
+  /// 按录入日期区间（含起止当天，均可留空）与物料名称或编码（模糊）筛选，
+  /// 日期与关键字条件同时生效，录入时间倒序。
   Future<List<LabelRecord>> query({
     DateTime? startDate,
     DateTime? endDate,
@@ -264,7 +265,7 @@ class LabelRecordStore extends ChangeNotifier {
   }
 }
 
-/// 日期区间与名称关键字的筛选条件，供各查询方法复用。
+/// 日期区间与名称/编码关键字的筛选条件，供各查询方法复用。
 class _RecordFilter {
   _RecordFilter({DateTime? startDate, DateTime? endDate, String keyword = ''}) {
     final where = <String>[];
@@ -289,8 +290,11 @@ class _RecordFilter {
           .replaceAll(r'\', r'\\')
           .replaceAll('%', r'\%')
           .replaceAll('_', r'\_');
-      where.add("name LIKE ? ESCAPE '\\'");
-      whereArgs.add('%$escaped%');
+      // 名称或编码任一匹配即可，括号保证关键字条件整体再与日期条件取 AND。
+      where.add(
+        "(name LIKE ? ESCAPE '\\' OR material_code LIKE ? ESCAPE '\\')",
+      );
+      whereArgs.addAll(['%$escaped%', '%$escaped%']);
     }
     whereClause = where.isEmpty ? null : where.join(' AND ');
     args = whereArgs;

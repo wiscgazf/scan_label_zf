@@ -14,16 +14,31 @@ void main() {
     detector.addSample(0, 0, 9.8, t0);
     // 300ms 时还未到 500ms，不稳定。
     expect(
-      detector.addSample(0.01, 0, 9.8, t0.add(const Duration(milliseconds: 100))),
+      detector.addSample(
+        0.01,
+        0,
+        9.8,
+        t0.add(const Duration(milliseconds: 100)),
+      ),
       isFalse,
     );
     expect(
-      detector.addSample(0, 0.01, 9.8, t0.add(const Duration(milliseconds: 300))),
+      detector.addSample(
+        0,
+        0.01,
+        9.8,
+        t0.add(const Duration(milliseconds: 300)),
+      ),
       isFalse,
     );
     // 稳定时长从第一次低抖动（100ms）起算，600ms 时满足 500ms。
     expect(
-      detector.addSample(0.01, 0, 9.81, t0.add(const Duration(milliseconds: 600))),
+      detector.addSample(
+        0.01,
+        0,
+        9.81,
+        t0.add(const Duration(milliseconds: 600)),
+      ),
       isTrue,
     );
     // 持续稳定则持续返回 true。
@@ -39,7 +54,12 @@ void main() {
     detector.addSample(0, 0, 9.8, t0.add(const Duration(milliseconds: 100)));
     // 400ms 时猛一晃（差值模长 > 0.35）。
     expect(
-      detector.addSample(1.5, 0.5, 9.8, t0.add(const Duration(milliseconds: 400))),
+      detector.addSample(
+        1.5,
+        0.5,
+        9.8,
+        t0.add(const Duration(milliseconds: 400)),
+      ),
       isFalse,
     );
     // 500ms 是晃动到静止的过渡帧，与上一帧差值仍大，视为抖动。

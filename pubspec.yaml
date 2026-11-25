@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   material_ui: ^1.1.0
   mobile_scanner: ^7.5.0
   paddle_ocr_native: ^0.1.1

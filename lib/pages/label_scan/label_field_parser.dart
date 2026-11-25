@@ -171,9 +171,8 @@ class LabelFieldParser {
   ) {
     if (fields[LabelFieldKey.deliveryDate]!.isNotEmpty) return;
     for (final region in regions) {
-      final match = RegExp(
-        r'20\d{2}[-/.]\d{1,2}[-/.]\d{1,2}',
-      ).firstMatch(_normalize(region.text));
+      final match = RegExp(r'20\d{2}[-/.]\d{1,2}[-/.]\d{1,2}')
+          .firstMatch(_normalize(region.text));
       if (match != null) {
         fields[LabelFieldKey.deliveryDate] = match.group(0)!;
         return;

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'l10n/app_localizations.dart';
 import 'pages/label_scan/label_records.dart';
 import 'pages/label_scan/label_records_page.dart';
 import 'pages/label_scan/label_scan_page.dart';
+import 'pages/label_scan/label_scan_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,12 +29,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: '标签扫一扫',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+    final controller = appLocaleController;
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) => MaterialApp.router(
+        onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
+        locale: controller.locale,
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        theme: LabelScanTheme.light,
+        routerConfig: _router,
       ),
-      routerConfig: _router,
     );
   }
 }

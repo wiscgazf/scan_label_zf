@@ -46,7 +46,7 @@ void main() {
     expect(await store.query(), isEmpty);
   });
 
-  test('按日期与名称筛选，录入时间倒序', () async {
+  test('按日期、名称与编码筛选，录入时间倒序', () async {
     await store.add(record('1', '信号线插排', DateTime(2026, 11, 25, 9)));
     await store.add(record('2', '电源线', DateTime(2026, 11, 25, 10)));
     await store.add(record('3', '信号线端子', DateTime(2026, 11, 24, 10)));
@@ -60,11 +60,26 @@ void main() {
     final byName = await store.query(keyword: '信号线');
     expect(byName.map((r) => r.id).toSet(), {'1', '3'});
 
+    final byCode = await store.query(keyword: 'CODE-2');
+    expect(byCode.single.id, '2');
+
     final both = await store.query(
       startDate: DateTime(2026, 11, 25),
       keyword: '信号线',
     );
     expect(both.single.id, '1');
+
+    // 编码匹配的记录仍须落在指定日期范围内。
+    final codeAndDate = await store.query(
+      startDate: DateTime(2026, 11, 25),
+      endDate: DateTime(2026, 11, 25),
+      keyword: 'CODE-2',
+    );
+    expect(codeAndDate.single.id, '2');
+    expect(
+      await store.query(startDate: DateTime(2026, 11, 26), keyword: 'CODE-2'),
+      isEmpty,
+    );
 
     expect(await store.query(keyword: '不存在的物料'), isEmpty);
     expect(await store.query(startDate: DateTime(2027, 1, 1)), isEmpty);
@@ -181,5 +196,9 @@ void main() {
     final filtered = await store.queryDuplicateGroups(keyword: '信号线');
     expect(filtered.single.materialCode, 'DUP');
     expect(filtered.single.records.length, 2);
+
+    final filteredByCode = await store.queryDuplicateGroups(keyword: 'DUP2');
+    expect(filteredByCode.single.materialCode, 'DUP2');
+    expect(filteredByCode.single.records.length, 2);
   });
 }

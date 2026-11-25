@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import 'label_records.dart';
 
 /// “全部”标签页：分页加载全部记录，支持下拉刷新与上拉加载更多。
@@ -29,12 +30,13 @@ class AllRecordsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final hasFilter =
         startDate != null || endDate != null || keyword.isNotEmpty;
     return _PagedRecordsView<LabelRecord>(
       filterKey: filterKey,
       pageSize: 30,
-      emptyText: hasFilter ? '没有符合条件的记录' : '暂无标签记录，先去首页扫一扫',
+      emptyText: hasFilter ? l10n.emptyFiltered : l10n.emptyRecords,
       fetcher: (limit, offset) => store.queryPage(
         startDate: startDate,
         endDate: endDate,
@@ -72,12 +74,15 @@ class DuplicateRecordsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final hasFilter =
         startDate != null || endDate != null || keyword.isNotEmpty;
     return _PagedRecordsView<DuplicateGroup>(
       filterKey: filterKey,
       pageSize: 10,
-      emptyText: hasFilter ? '没有符合条件的重复记录' : '没有重复编码的记录',
+      emptyText: hasFilter
+          ? l10n.emptyFilteredDuplicates
+          : l10n.emptyDuplicates,
       fetcher: (limit, offset) => store.queryDuplicateGroups(
         startDate: startDate,
         endDate: endDate,
@@ -85,11 +90,8 @@ class DuplicateRecordsTab extends StatelessWidget {
         limit: limit,
         offset: offset,
       ),
-      itemBuilder: (context, group) => _DuplicateGroupView(
-        group: group,
-        onEdit: onEdit,
-        onDelete: onDelete,
-      ),
+      itemBuilder: (context, group) =>
+          _DuplicateGroupView(group: group, onEdit: onEdit, onDelete: onDelete),
     );
   }
 }
@@ -209,6 +211,7 @@ class _PagedRecordsViewState<T> extends State<_PagedRecordsView<T>>
   }
 
   Widget _buildFooter(ColorScheme colorScheme) {
+    final l10n = AppLocalizations.of(context);
     if (_loadingMore) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 16),
@@ -226,7 +229,7 @@ class _PagedRecordsViewState<T> extends State<_PagedRecordsView<T>>
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: Center(
           child: Text(
-            '没有更多了',
+            l10n.noMore,
             style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
           ),
         ),
@@ -251,11 +254,17 @@ class _DuplicateGroupView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(4, 4, 4, 8),
+        Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: colorScheme.primaryContainer.withValues(alpha: 0.45),
+            borderRadius: BorderRadius.circular(10),
+          ),
           child: Row(
             children: [
               Icon(
@@ -277,16 +286,13 @@ class _DuplicateGroupView extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 2,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: colorScheme.secondaryContainer.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  '重复 ${group.count} 次',
+                  l10n.duplicateCount(group.count),
                   style: TextStyle(
                     fontSize: 11,
                     color: colorScheme.onSecondaryContainer,
@@ -325,10 +331,14 @@ class RecordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     return Card(
-      elevation: 0,
+      // 轻阴影分隔相邻记录，保留白色表面与无描边设计。
+      elevation: 2,
+      shadowColor: colorScheme.shadow.withValues(alpha: 0.16),
+      surfaceTintColor: Colors.transparent,
       margin: EdgeInsets.zero,
-      color: colorScheme.surfaceContainerLow,
+      color: colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 12, 10, 10),
@@ -339,7 +349,7 @@ class RecordCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    record.name.isEmpty ? '（未填写名称）' : record.name,
+                    record.name.isEmpty ? l10n.unnamedRecord : record.name,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -369,16 +379,16 @@ class RecordCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerHighest.withValues(
-                  alpha: 0.5,
-                ),
+                color: colorScheme.primaryContainer.withValues(alpha: 0.45),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
-                '编码：${record.materialCode.isEmpty ? '-' : record.materialCode}',
+                l10n.codeLabel(
+                  record.materialCode.isEmpty ? '-' : record.materialCode,
+                ),
                 style: TextStyle(
                   fontSize: 12,
-                  color: colorScheme.onSurfaceVariant,
+                  color: colorScheme.onPrimaryContainer,
                   letterSpacing: 0.2,
                 ),
               ),
@@ -386,23 +396,33 @@ class RecordCard extends StatelessWidget {
             const SizedBox(height: 6),
             Row(
               children: [
-                Icon(
-                  Icons.schedule,
-                  size: 14,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  formatRecordTime(record.createdAt),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: colorScheme.onSurfaceVariant,
+                Expanded(
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.schedule,
+                        size: 14,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          formatRecordTime(record.createdAt),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const Spacer(),
+                const SizedBox(width: 8),
                 _RecordActionButton(
                   icon: Icons.edit_outlined,
-                  tooltip: '编辑',
+                  tooltip: l10n.edit,
                   color: colorScheme.primary,
                   background: colorScheme.primaryContainer.withValues(
                     alpha: 0.45,
@@ -412,7 +432,7 @@ class RecordCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 _RecordActionButton(
                   icon: Icons.delete_outline,
-                  tooltip: '删除',
+                  tooltip: l10n.delete,
                   color: colorScheme.error,
                   background: colorScheme.errorContainer.withValues(alpha: 0.4),
                   onTap: () => onDelete(record),
@@ -426,7 +446,7 @@ class RecordCard extends StatelessWidget {
   }
 }
 
-/// 记录卡片右下角的操作按钮：浅色圆角底 + 小图标。
+/// 记录卡片右下角的操作按钮：浅色圆角底 + 48dp 触控区域。
 class _RecordActionButton extends StatelessWidget {
   const _RecordActionButton({
     required this.icon,
@@ -453,9 +473,9 @@ class _RecordActionButton extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(8),
           child: SizedBox(
-            width: 32,
-            height: 32,
-            child: Icon(icon, size: 18, color: color),
+            width: 48,
+            height: 48,
+            child: Icon(icon, size: 20, color: color),
           ),
         ),
       ),
