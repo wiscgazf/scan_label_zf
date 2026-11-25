@@ -32,9 +32,9 @@
 
 ## 演示
 
-![管理页与重复标签演示](screenshots/demo.gif)
+![功能演示](screenshots/demo.gif)
 
-管理页浏览与"重复标签"切换演示；[观看完整演示视频（51 秒，含扫码识别全流程）](screenshots/demo.mp4)。
+识别结果核对、保存入库与管理页搜索筛选演示；[观看完整演示视频（48 秒）](screenshots/demo.mp4)。
 
 ## 技术栈
 
